@@ -15,3 +15,6 @@ class PredictionDataForm(FlaskForm):
 
 class TrainModelForm(FlaskForm):
 	train = SubmitField("Train Model")
+
+class ModelFromScratchForm(FlaskForm):
+	restart = SubmitField("Start Model from Scratch")

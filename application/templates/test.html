@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Testing</title>
-</head>
-<body>
-	<h1>This is the Testing Page</h1>
+{% extends 'layout.html' %}
 
+{% block content %}
+<h1>This is the Testing Page</h1>
 
 	<div>
 	  		<form method="POST" enctype="multipart/form-data" action="">
@@ -35,5 +31,4 @@
 	    		</fieldset>
 	  		</form>
 	  	</div>
-</body>
-</html>
+{% endblock %}

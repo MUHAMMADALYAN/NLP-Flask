@@ -1,17 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Home</title>
-</head>
-<body>
+{% extends 'layout.html' %}
 
-	<nav class="navbar navbar-light" style="background-color: #32C4D6;">
-            <!-- Navbar content -->
-            <div>
-                <a href="{{ url_for('train') }}" style="text-decoration: none">Training</a>
-                <a href="{{ url_for('test') }}" style="text-decoration: none">Testing</a>
-            </div>
-        </nav>
-
-</body>
-</html>
+{% block content %}
+	<h1>Welcome</h1>
+{% endblock %}

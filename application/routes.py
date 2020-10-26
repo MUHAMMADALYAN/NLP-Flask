@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, flash
 from flask import current_app as app
 from werkzeug.utils import secure_filename, redirect
 
-from .forms import FileInputForm, PredictionDataForm, TrainModelForm
+from .forms import FileInputForm, PredictionDataForm, TrainModelForm, ModelFromScratchForm
 from .util_functions import *
 
 from tensorflow.keras.models import load_model
@@ -18,36 +18,36 @@ POST = 'POST'
 classes = ['purpose', 'craftsmaship', 'aesthetic', "narative", "influence", "none"]
 
 tokenizer = load_tokenizer()
-model     = load_model('application/static/Models/third -  loss 0.3476 accuracy0.8954 val_loss1.2306 val_accuracy0.61.h5')
+model     = load_model('application/static/Models/model_under_use.h5')
 maxlen    = 40
+
 
 @app.route("/",  methods=[GET])
 @app.route("/home",  methods=[GET])
 def home():
     return render_template('home.html')
 
-
 @app.route("/train",methods=[GET, POST])
 def train():
-    input_form  = FileInputForm()
+    inputform  = FileInputForm()
 
-    if input_form.validate_on_submit():
+    if inputform.validate_on_submit():
         singlefile()
-        file = input_form.file.data
+        file = inputform.file.data
         if file.filename[-3:] != 'csv':
-            print("ONLY UPLOAD A 'csv' FILE!")
-            return redirect('train')
+            #print("ONLY UPLOAD A 'csv' FILE!")
+            flash("ONLY UPLOAD A 'csv' FILE!")
+            return redirect(url_for('train'))
         file.save(os.path.join(app.config['UPLOAD_FOLDER'],str(file.filename)))
-        print("File Successfully Uploaded")
+        #print("File Successfully Uploaded")
+        flash("File Successfully Uploaded")
         file.close()
 
     
-    trainModel_form = TrainModelForm()
-    #if trainModel_form.validate_on_submit():
-        
+    trainModelform = TrainModelForm()        
+    restratModelform = ModelFromScratchForm()
 
-
-    return render_template("train.html", input_form=input_form, trainModel_form=trainModel_form)
+    return render_template("train.html", inputform=inputform, trainModelform=trainModelform, restratModelform=restratModelform)
 
 @app.route('/train_model', methods=[POST])
 def train_model():
@@ -103,10 +103,22 @@ def train_model():
     model.fit(train_padded, train_labels, epochs=30, validation_data=(test_padded, test_labels))
 
     #overwriting the model
-    model.save('application/static/Models/new.h5')
-    print("Model Trained and Saved!")
+    model.save('application/static/Models/model_under_use.h5')
+    #print("Model Trained and Saved!")
 
+    flash("Model Trained and Saved!")
     return redirect('train')
+
+@app.route("/restrat_model", methods=[POST])
+def restart_model():
+	global model
+
+	model = load_model("application/static/Models/scratch_model.h5")
+	model.save("application/static/Models/model_under_use.h5")
+
+	flash("Model Started Form Scratch Successful")
+
+	return redirect(url_for('train'))
 
 
 @app.route("/test",  methods=[GET,POST])
@@ -121,7 +133,7 @@ def test():
         text_seq        = tokenizer.texts_to_sequences(sentences)
         text_seq_padded = pad_sequences(text_seq, maxlen=maxlen, padding='post', truncating='post')
 
-        print(text_seq_padded)
+        #print(text_seq_padded)
         predictions = model.predict(text_seq_padded)
         
         class_num = [ tfmath.argmax(prediction) for prediction in predictions]

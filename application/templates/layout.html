@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Home</title>
+</head>
+<body>
+
+	<nav class="navbar navbar-light" style="background-color: #32C4D6;">
+            <!-- Navbar content -->
+            <div>
+            	<a href="{{ url_for('home') }}" style="text-decoration: none">Home</a>
+                <a href="{{ url_for('train') }}" style="text-decoration: none">Training</a>
+                <a href="{{ url_for('test') }}" style="text-decoration: none">Testing</a>
+            </div>
+        </nav>
+
+        <div> 
+          {% for category, message in get_flashed_messages(with_categories=true) %}
+            {% if message %}
+              <div class="alert alert-{{ category }}">                     
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% block content %} {% endblock %}
+
+</body>
+</html>
