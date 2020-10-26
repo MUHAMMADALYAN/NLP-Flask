@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<title>Training</title>
+
+	</head>
+
+	<body>
+		<h1>This is the Training Page</h1>
+
+		<div>
+	  		<form method="POST" enctype="multipart/form-data" action="{{ url_for('train') }}">
+		  		<fieldset class="form-group">
+	           
+	      		{{ input_form.hidden_tag() }}          
+	           
+	       		<div class="form-group">
+	            	{{ input_form.file }} 
+	        	</div>
+	             
+	          	<div class="form-group ">	      	
+	            	{{ input_form.submit }}
+	          	</div>
+	    		</fieldset>
+	  		</form>
+	  	</div>
+
+	  	<div>
+	  		<form method="POST" action="{{ url_for('train_model') }}">
+		  		<fieldset class="form-group">
+	           
+	      		{{ trainModel_form.hidden_tag() }}          
+	             
+	          	<div class="form-group ">	      	
+	            	{{ trainModel_form.train }}
+	          	</div>
+	    		</fieldset>
+	  		</form>
+	  	</div>
+
+
+
+</body>
+</html>

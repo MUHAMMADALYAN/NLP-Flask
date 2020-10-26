@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<header>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="{{
+    url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+</header>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1><input id="textfile2" type="file" name="file"></h1>
+<h2><button id="uploadbutton2" type="file" name="file">upload</button></h2>
+
+<script>
+    let upload2 = document.getElementById("uploadbutton2");
+    let fileInput2 = document.getElementById('textfile2');
+    let file2;
+
+    fileInput2.onchange = () => {
+        file2 = fileInput2.files[0];
+        console.log(fileInput2);
+    };
+
+    function uploadFunction2() {
+    $.ajax({
+      type: 'POST',
+      url: '/upload_text',
+      data: file2,
+      contentType: 'application/my-binary-type', // set accordingly
+      processData: false
+    });
+    }
+
+    upload2.addEventListener("click", function() {
+    uploadFunction2();
+    }, false);
+    </script>
+
+
+</body>
+</html>

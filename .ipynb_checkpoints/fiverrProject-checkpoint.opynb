@@ -1,0 +1,456 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 251,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "from collections import Counter\n",
+    "from nltk.corpus import stopwords\n",
+    "from tensorflow.keras.preprocessing.text import Tokenizer\n",
+    "from tensorflow.keras.preprocessing.sequence import pad_sequences\n",
+    "from tensorflow.keras.models import Sequential\n",
+    "from tensorflow.keras.layers import LSTM, Dense, Embedding, Input, Conv1D\n",
+    "from tensorflow.keras.optimizers import Adam\n",
+    "from tensorflow.keras.initializers import Constant"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 272,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def load_data(path):\n",
+    "    df = pd.read_csv(path)\n",
+    "    df = df[:-1]\n",
+    "    return df\n",
+    "\n",
+    "\n",
+    "def count_words(features):\n",
+    "    counter = Counter()\n",
+    "    maximum = 0\n",
+    "    \n",
+    "    for sentence in features:\n",
+    "        maximum = max(maximum, len(sentence))\n",
+    "        \n",
+    "        for word in sentence: \n",
+    "            counter[word] += 1\n",
+    "            \n",
+    "    return maximum, counter\n",
+    "\n",
+    "\n",
+    "def filter_func(temp):\n",
+    "    \n",
+    "    stop = set(stopwords.words(\"english\"))\n",
+    "    \n",
+    "    temp = temp.lower()\n",
+    "    temp = temp.split()\n",
+    "    temp = [\n",
+    "        element\n",
+    "        for element in temp\n",
+    "        if element not in stop\n",
+    "    ]\n",
+    "    return temp\n",
+    "\n",
+    "filter_func = np.vectorize(filter_func, otypes=[list])    \n",
+    "\n",
+    "\n",
+    "def shuffle(features, labels):\n",
+    "    \n",
+    "    assert labels.shape[0] == features.shape[0]\n",
+    "\n",
+    "    idx = np.arange(labels.shape[0])\n",
+    "    np.random.shuffle(idx)\n",
+    "    \n",
+    "    return features[idx], labels[idx]\n",
+    "\n",
+    "\n",
+    "def convert_labels(labels):\n",
+    "    index = {\n",
+    "        \"purpose\"      : [1, 0, 0], \n",
+    "        \"craftsmanship\": [0, 1, 0],  \n",
+    "        \"aesthetic\"    : [0, 0, 1]\n",
+    "    }\n",
+    "    return np.array([\n",
+    "        index[e] \n",
+    "        for e in labels\n",
+    "    ])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 253,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "path = \"Panic Consolidated Training Phrases.csv\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 254,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = load_data(path)\n",
+    "labels   = df['label'].to_numpy()\n",
+    "features = df['sentences'].to_numpy()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 255,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "classes = ['purpose', 'craftsmaship', 'aesthetic']\n",
+    "total_samples = len(df)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 256,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "features = filter_func(features)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 257,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "rand_features, rand_labels = shuffle(features, labels)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 306,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Total Number of unique words after filtering are 2910 and the longest sentence is 29 words\n"
+     ]
+    }
+   ],
+   "source": [
+    "maxlen, count = count_words(features)\n",
+    "num_words = len(count)\n",
+    "maxlen = maxlen - 10\n",
+    "print(f\"Total Number of unique words after filtering are {num_words} and the longest sentence is {maxlen} words\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 292,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ratio = 0.9\n",
+    "mark  = int(total_samples*ratio)\n",
+    "\n",
+    "train = (rand_features[:mark], rand_labels[:mark])\n",
+    "test  = (rand_features[mark:], rand_labels[mark:])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 293,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_labels = convert_labels(train[1])\n",
+    "test_labels = convert_labels(test[1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 294,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tokenizer = Tokenizer(num_words=num_words)\n",
+    "tokenizer.fit_on_texts(train[0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 295,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "word_index = tokenizer.word_index\n",
+    "reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 296,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#word_index"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 297,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_sequences = tokenizer.texts_to_sequences(train[0])\n",
+    "test_sequences  = tokenizer.texts_to_sequences(test[0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 298,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "([1, 9, 30, 512], [87, 20])"
+      ]
+     },
+     "execution_count": 298,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train_sequences[0], test_sequences[0]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 299,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_padded = pad_sequences(train_sequences, maxlen=maxlen, padding='post', truncating='post')\n",
+    "test_padded = pad_sequences(test_sequences, maxlen=maxlen, padding='post', truncating='post')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 308,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = Sequential([\n",
+    "    Input(shape=maxlen),\n",
+    "    Embedding(num_words, 40),\n",
+    "    LSTM(64, dropout=0.1, return_sequences=True),\n",
+    "    LSTM(64, dropout=0.1),\n",
+    "    Dense(128, activation='relu'),\n",
+    "    Dense(3, activation='softmax')\n",
+    "])\n",
+    "\n",
+    "model.compile(optimizer=Adam(0.0001), loss='categorical_crossentropy', metrics=['accuracy'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 309,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Model: \"sequential_5\"\n",
+      "_________________________________________________________________\n",
+      "Layer (type)                 Output Shape              Param #   \n",
+      "=================================================================\n",
+      "embedding_5 (Embedding)      (None, 29, 40)            116400    \n",
+      "_________________________________________________________________\n",
+      "lstm_10 (LSTM)               (None, 29, 64)            26880     \n",
+      "_________________________________________________________________\n",
+      "lstm_11 (LSTM)               (None, 64)                33024     \n",
+      "_________________________________________________________________\n",
+      "dense_10 (Dense)             (None, 128)               8320      \n",
+      "_________________________________________________________________\n",
+      "dense_11 (Dense)             (None, 3)                 387       \n",
+      "=================================================================\n",
+      "Total params: 185,011\n",
+      "Trainable params: 185,011\n",
+      "Non-trainable params: 0\n",
+      "_________________________________________________________________\n"
+     ]
+    }
+   ],
+   "source": [
+    "model.summary()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 310,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Epoch 1/20\n",
+      "WARNING:tensorflow:Model was constructed with shape (None, 29) for input Tensor(\"input_9:0\", shape=(None, 29), dtype=float32), but it was called on an input with incompatible shape (None, 34).\n",
+      "WARNING:tensorflow:Model was constructed with shape (None, 29) for input Tensor(\"input_9:0\", shape=(None, 29), dtype=float32), but it was called on an input with incompatible shape (None, 34).\n",
+      "24/24 [==============================] - ETA: 0s - loss: 1.0967 - accuracy: 0.4045WARNING:tensorflow:Model was constructed with shape (None, 29) for input Tensor(\"input_9:0\", shape=(None, 29), dtype=float32), but it was called on an input with incompatible shape (None, 34).\n",
+      "24/24 [==============================] - 1s 58ms/step - loss: 1.0967 - accuracy: 0.4045 - val_loss: 1.1003 - val_accuracy: 0.3333\n",
+      "Epoch 2/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0937 - accuracy: 0.4059 - val_loss: 1.1014 - val_accuracy: 0.3333\n",
+      "Epoch 3/20\n",
+      "24/24 [==============================] - 1s 23ms/step - loss: 1.0908 - accuracy: 0.4059 - val_loss: 1.1052 - val_accuracy: 0.3333\n",
+      "Epoch 4/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0890 - accuracy: 0.4059 - val_loss: 1.1101 - val_accuracy: 0.3333\n",
+      "Epoch 5/20\n",
+      "24/24 [==============================] - 1s 23ms/step - loss: 1.0880 - accuracy: 0.4059 - val_loss: 1.1108 - val_accuracy: 0.3333\n",
+      "Epoch 6/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0876 - accuracy: 0.4059 - val_loss: 1.1124 - val_accuracy: 0.3333\n",
+      "Epoch 7/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0877 - accuracy: 0.4059 - val_loss: 1.1141 - val_accuracy: 0.3333\n",
+      "Epoch 8/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0876 - accuracy: 0.4059 - val_loss: 1.1101 - val_accuracy: 0.3333\n",
+      "Epoch 9/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0875 - accuracy: 0.4059 - val_loss: 1.1153 - val_accuracy: 0.3333\n",
+      "Epoch 10/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0861 - accuracy: 0.4059 - val_loss: 1.1112 - val_accuracy: 0.3333\n",
+      "Epoch 11/20\n",
+      "24/24 [==============================] - 1s 25ms/step - loss: 1.0849 - accuracy: 0.4059 - val_loss: 1.1124 - val_accuracy: 0.3333\n",
+      "Epoch 12/20\n",
+      "24/24 [==============================] - 1s 23ms/step - loss: 1.0823 - accuracy: 0.4059 - val_loss: 1.1116 - val_accuracy: 0.3333\n",
+      "Epoch 13/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 1.0721 - accuracy: 0.4059 - val_loss: 1.1028 - val_accuracy: 0.3333\n",
+      "Epoch 14/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 0.9711 - accuracy: 0.5394 - val_loss: 0.9955 - val_accuracy: 0.4762\n",
+      "Epoch 15/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 0.6571 - accuracy: 0.6876 - val_loss: 0.8675 - val_accuracy: 0.5357\n",
+      "Epoch 16/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 0.5282 - accuracy: 0.7130 - val_loss: 0.8722 - val_accuracy: 0.6667\n",
+      "Epoch 17/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 0.4286 - accuracy: 0.8011 - val_loss: 0.7251 - val_accuracy: 0.7381\n",
+      "Epoch 18/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 0.3096 - accuracy: 0.8852 - val_loss: 0.7286 - val_accuracy: 0.7143\n",
+      "Epoch 19/20\n",
+      "24/24 [==============================] - 1s 23ms/step - loss: 0.2231 - accuracy: 0.9306 - val_loss: 0.7536 - val_accuracy: 0.7619\n",
+      "Epoch 20/20\n",
+      "24/24 [==============================] - 1s 24ms/step - loss: 0.1530 - accuracy: 0.9506 - val_loss: 0.8261 - val_accuracy: 0.7381\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<tensorflow.python.keras.callbacks.History at 0x228956dee80>"
+      ]
+     },
+     "execution_count": 310,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model.fit(train_padded, train_labels, epochs=20, validation_data=(test_padded, test_labels))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 281,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "numpy.ndarray"
+      ]
+     },
+     "execution_count": 281,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "type(test_padded)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 311,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "#model.save(\"loss:0.0994 accuracy:0.9693 val_loss:0.9458 val_accuracy:0.72.h5\")\n",
+    "model.save(\"second.h5\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "loss:0.2231 accuracy:0.9306 val_loss:0.7536 val_accuracy:0.76"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
