@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Testing</title>
+</head>
+<body>
+	<h1>This is the Testing Page</h1>
+
+
+	<div>
+	  		<form method="POST" enctype="multipart/form-data" action="">
+		  		<fieldset class="form-group">
+	           
+	      		{{ prediction_form.hidden_tag() }}
+	           
+	       		<div class="form-group">
+	            	{{ prediction_form.text_area }}
+	        	</div>
+
+                <div class="form-group ">
+	            	{{ prediction_form.submit }}
+	          	</div>
+	             
+	          	<div class="form-group ">
+	          		{% for i in data %}	          				
+	          			<p>{{ i[0] }} - Class: {{ i[2] }}</p>
+	          			<span>Confidence:</span>
+	          			<ul>
+		          			{% for j in range(6) %}
+		          				<li>{{ i[1][j]*100 }}</li>
+		          			{% endfor %}         
+	          			</ul>			
+	            	{% endfor %}
+	          	</div>
+	    		</fieldset>
+	  		</form>
+	  	</div>
+</body>
+</html>
