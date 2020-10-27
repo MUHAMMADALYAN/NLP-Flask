@@ -4,6 +4,8 @@ from collections import Counter
 import csv, pickle, os
 from nltk.corpus import stopwords
 
+class_dict = {0:'purpose', 1:'craftsmaship', 2:'aesthetic', 3:"narative", 4:"influence", 5:"none"}
+
 def load_data(path):
     with open(path, 'r') as f:
         reader = csv.reader(f)
@@ -58,7 +60,7 @@ def shuffle(features, labels):
     return features[idx], labels[idx]
 
 
-def convert_labels(labels):
+def onehot_encode_labels(labels):
     index = {
         "purpose"      : [1, 0, 0, 0, 0, 0], 
         "craftsmanship": [0, 1, 0, 0, 0, 0],  
@@ -73,13 +75,40 @@ def convert_labels(labels):
     ])
 
 def load_tokenizer():
-    with open('application/static/Tokenizer/tokenizer.pickle', 'rb') as handle:
+
+    with open('application/static/Pickles/tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     return tokenizer
+
+def save_tokenizer(tokenizer):
+
+    with open('application/static/Pickles/tokenizer.pickle', 'wb') as handle:
+        pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+def load_classColors():
+
+    with open('application/static/Pickles/class_colors.pickle', 'rb') as handle:
+        class_colors = pickle.load(handle)
+
+    return class_colors
+
+def save_classColors(new_purpose, new_craftsmaship, new_aesthetic, new_none):
+    class_colors = {'purpose': new_purpose, 'craftsmaship': new_craftsmaship, 'aesthetic': new_aesthetic, 'none':new_none}
+
+    #Overwriting Previous Colors File
+    with open('application/static/Pickles/class_colors.pickle', 'wb') as handle:
+        pickle.dump(class_colors, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def singlefile():
     list = os.listdir("application/static/File_Upload_Folder/")
     #print(list)
     for i in list:
         os.remove("application/static/File_Upload_Folder/"+i)
+
+def decode_onehot_labels(class_arr):
+    x = [
+        class_dict[class_num] for class_num in class_arr 
+    ]
+
+    return x

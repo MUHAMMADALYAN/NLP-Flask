@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, url_for, flash
 from flask import current_app as app
 from werkzeug.utils import secure_filename, redirect
 
-from .forms import FileInputForm, PredictionDataForm, TrainModelForm, ModelFromScratchForm
+from .forms import FileInputForm, PredictionDataForm, TrainModelForm, ModelFromScratchForm,  SelectCorrectClassForm, ChangeClassColorsForm
 from .util_functions import *
 
 from tensorflow.keras.models import load_model
@@ -15,17 +15,36 @@ import tensorflow.keras.backend as tfbackend
 GET  = 'GET'
 POST = 'POST'
 
-classes = ['purpose', 'craftsmaship', 'aesthetic', "narative", "influence", "none"]
+classes 	 = ['purpose', 'craftsmaship', 'aesthetic', 'narative', 'influence', 'none']
 
-tokenizer = load_tokenizer()
-model     = load_model('application/static/Models/model_under_use.h5')
-maxlen    = 40
-
+tokenizer 	 = load_tokenizer()
+model     	 = load_model('application/static/Models/model_under_use.h5')
+maxlen    	 = 40
+class_colors = load_classColors()
 
 @app.route("/",  methods=[GET])
 @app.route("/home",  methods=[GET])
 def home():
     return render_template('home.html')
+
+@app.route("/changeClassColors",  methods=[GET, POST])
+def change_class_colors():
+	global class_colors
+
+	form = ChangeClassColorsForm()
+	if form.validate_on_submit():
+		new_purpose		 = form.new_purpose.data
+		new_craftsmaship = form.new_craftsmaship.data
+		new_aesthetic 	 = form.new_aesthetic.data
+		new_none		 = form.new_none.data
+
+		save_classColors(new_purpose, new_craftsmaship, new_aesthetic, new_none)
+		class_colors = load_classColors()
+
+		flash("Class Colors Changed Successfully!", "success")
+		return redirect(url_for("home"))
+
+	return render_template("changeClassColors.html",  form=form, class_colors=class_colors)
 
 @app.route("/train",methods=[GET, POST])
 def train():
@@ -36,11 +55,11 @@ def train():
         file = inputform.file.data
         if file.filename[-3:] != 'csv':
             #print("ONLY UPLOAD A 'csv' FILE!")
-            flash("ONLY UPLOAD A 'csv' FILE!")
+            flash("ONLY UPLOAD A 'csv' FILE!", "danger")
             return redirect(url_for('train'))
         file.save(os.path.join(app.config['UPLOAD_FOLDER'],str(file.filename)))
         #print("File Successfully Uploaded")
-        flash("File Successfully Uploaded")
+        flash("File Successfully Uploaded", "success")
         file.close()
 
     
@@ -81,16 +100,17 @@ def train_model():
     test  = (rand_features[mark:], rand_labels[mark:])
 
     #One hot encoding Labels
-    train_labels = convert_labels(train[1])
-    test_labels  = convert_labels(test[1])
+    train_labels = onehot_encode_labels(train[1])
+    test_labels  = onehot_encode_labels(test[1])
 
     #Tokenizing the data
     #tokenizer = Tokenizer(3126)
     tokenizer.fit_on_texts(rand_features)
 
     # saving the tokenizer
-    with open('application/static/Tokenizer/tokenizer.pickle', 'wb') as handle:
-        pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    save_tokenizer(tokenizer)
+    #with open('application/static/Pickles/tokenizer.pickle', 'wb') as handle:
+    #    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
     train_sequences = tokenizer.texts_to_sequences(train[0])
@@ -106,7 +126,7 @@ def train_model():
     model.save('application/static/Models/model_under_use.h5')
     #print("Model Trained and Saved!")
 
-    flash("Model Trained and Saved!")
+    flash("Model Trained and Saved!", "success")
     return redirect('train')
 
 @app.route("/restrat_model", methods=[POST])
@@ -125,22 +145,24 @@ def restart_model():
 def test():
     global model, tokenizer, maxlen
 
-    form = PredictionDataForm()
-    if form.validate_on_submit():
-        text      = form.text_area.data
+    predictionForm = PredictionDataForm()
+    if predictionForm.validate_on_submit():
+        text      = predictionForm.text_area.data
         sentences = text.split('.')
 
         text_seq        = tokenizer.texts_to_sequences(sentences)
         text_seq_padded = pad_sequences(text_seq, maxlen=maxlen, padding='post', truncating='post')
 
-        #print(text_seq_padded)
         predictions = model.predict(text_seq_padded)
         
         class_num = [ tfmath.argmax(prediction) for prediction in predictions]
         class_num = [ tfbackend.eval(i) for i in class_num ]
+        class_num = decode_onehot_labels(class_num)
         
-        data = zip(sentences, predictions, class_num)
+        data = list(zip(sentences, predictions, class_num))
 
-        return render_template("test.html", prediction_form=form, data=data)
+        correctClassForm = SelectCorrectClassForm()
+
+        return render_template("test.html", predictionForm=predictionForm, data=data, correctClassForm=correctClassForm, class_colors=class_colors)
     
-    return render_template("test.html", prediction_form=form)
+    return render_template("test.html", predictionForm=predictionForm)
