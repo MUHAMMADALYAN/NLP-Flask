@@ -1,8 +1,21 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-
-	<h1>Welcome</h1>
-	<a href="{{ url_for('change_class_colors') }}">Chanage Class Colors</a>
+	
+	<div class="ml-4">
+			<h1 class="my-3">Welcome</h1>
+			<ul>
+				<li>
+					<a href="{{ url_for('change_class_colors') }}">Chanage Class Colors</a>
+				</li>
+				<li>
+					<a href="{{ url_for('train') }}">Train the Model</a>
+				</li>
+				<li>
+					<a href="{{ url_for('test') }}">Use Model for Prediction</a>
+				</li>
+			</ul>
+		
+	</div>
 
 {% endblock %}

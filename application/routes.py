@@ -136,7 +136,7 @@ def restart_model():
 	model = load_model("application/static/Models/scratch_model.h5")
 	model.save("application/static/Models/model_under_use.h5")
 
-	flash("Model Started Form Scratch Successful")
+	flash("Model Started Form Scratch Successful", "success")
 
 	return redirect(url_for('train'))
 

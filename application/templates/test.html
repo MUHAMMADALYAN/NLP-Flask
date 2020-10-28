@@ -31,33 +31,50 @@
 </style>
 {% endif %}
 
-<h1>This is the Testing Page</h1>
-
-<div>
-	<form method="POST" enctype="multipart/form-data" action="">
-		<fieldset class="form-group">
+<div class="row">
+	<!-- Column for the form -->
+	<div class="col-md-6 pl-4 py-3">
+		<form method="POST" enctype="multipart/form-data" action="{{ url_for('test') }}">
+			<fieldset class="form-group">
 	           
 	    	{{ predictionForm.hidden_tag() }}
 	          
-	       	<div class="form-group">
-	           	{{ predictionForm.text_area }}
-	        </div>
+	        
+	        <legend>Enter Text to Classify</legend>
+			<div class="form-group">
+			      
+				{% if predictionForm.text_area.errors %}
+				{{ predictionForm.text_area(class='form-control form-control-lg is-invalid') }}
+				<div class="invalid-feedback">
+			        {% for error in predictionForm.text_area.errors %}
+			            <span>{{ error }}</span>
+			        {% endfor %}
+				</div>
+			    {% else %}
+			        {{ predictionForm.text_area(class='form-control form-control-lg') }}
+			    {% endif %}
+			 
+			    {{ predictionForm.submit(class='btn btn-outline-dark my-3') }}
+			</div>
+			</fieldset>
+		</form>
+	</div>
 
-            <div class="form-group ">
-	           	{{ predictionForm.submit }}
-	        </div>	            
-	    </fieldset>
-	</form>	
+	<!-- Column for the Output -->
+	
+	<div class="col-md-6 pl-4 py-3">
+		<p>
+	    	{% for i in data %}
+	            <mark id="{{ i[2] }}"> {{ i[0] }}</mark>
+	        {% endfor %}
+    	</p>
+    </div>
+	
 </div>
+			
 
 <div>
-    <p>
-    	{% for i in data %}
-            <mark id="{{ i[2] }}"> {{ i[0] }}</mark>
-        {% endfor %}
-    </p>
-	
-    <table>
+	<table>
 		{% for j in data %}
 			<tr>
 				<td>{{ j[0] }}</td>

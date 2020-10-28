@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div>
+<div class="container border text-center m-4">
 	<legend>Current Class Colors</legend>
 	{% for class, color in class_colors.items() %}
 		<p>
@@ -11,7 +11,7 @@
 	{% endfor %}
 </div>
 
-<div class="content-section">
+<div class="container m-4">
   <form method="POST" action="{{ url_for('change_class_colors') }}">
 	  <fieldset class="form-group">
 
