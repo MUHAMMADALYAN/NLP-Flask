@@ -5,15 +5,15 @@
 {% if data %}
 <style type="text/css">
 #purpose{
-    background-color: {{ class_colors['purpose'] }}; 
+    background-color: "{{ class_colors['purpose'] }}"; 
     color: black;
 }
 #craftsmaship{
-    background-color: {{ class_colors['craftsmaship'] }};
+    background-color:  "{{ class_colors['craftsmaship'] }}";
     color: black;
 }
 #aesthetic{
-    background-color: {{ class_colors['aesthetic'] }};
+    background-color: "{{ class_colors['aesthetic'] }}";
     color: black;
 }
 #narative{
@@ -25,7 +25,7 @@
     color: black;
 }
 #none{
-    background-color: {{ class_colors['none'] }};
+    background-color: "{{ class_colors['none'] }}";
     color: black;
 }
 </style>
@@ -79,10 +79,14 @@
 			<tr>
 				<td>{{ j[0] }}</td>
 				<td>{{ j[1] }}</td>
-				<td>{{ j[2] }}</td>
-				<td>
+				<!--td>{{ j[2] }}</td>
+				<!--td>
 					{{ correctClassForm.hidden_tag() }}
 					{{ correctClassForm.dropdown }}
+				</td-->
+				<td>
+					{{ j[3].hidden_tag() }}
+					{{ j[3].dropdown }}
 				</td>
 			</tr>
 		{% endfor %}

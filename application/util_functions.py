@@ -4,14 +4,14 @@ from collections import Counter
 import csv, pickle, os
 from nltk.corpus import stopwords
 
-class_dict = {
-    0:'purpose', 
-    1:'craftsmaship', 
-    2:'aesthetic', 
-    3:"narative", 
-    4:"influence", 
-    5:"none"
-}
+class_arr = np.array([
+    "purpose", 
+    "craftsmaship", 
+    "aesthetic", 
+    "narative", 
+    "influence", 
+    "none"
+])
 
 
 def load_data(path):
@@ -119,10 +119,6 @@ def singlefile():
         os.remove("application/static/File_Upload_Folder/"+i)
 
 
-def decode_onehot_labels(class_arr):
-    x = [
-        class_dict[class_num] 
-        for class_num in class_arr 
-    ]
-
-    return x
+def decode_onehot_labels(class_idx):
+    
+    return class_arr[class_idx] 

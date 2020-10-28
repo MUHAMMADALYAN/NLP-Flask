@@ -15,7 +15,14 @@ import tensorflow.keras.backend as tfbackend
 GET  = 'GET'
 POST = 'POST'
 
-classes 	 = ['purpose', 'craftsmaship', 'aesthetic', 'narative', 'influence', 'none']
+'''classes = [
+    'purpose', 
+    'craftsmaship', 
+    'aesthetic', 
+    'narative', 
+    'influence', 
+    'none',
+]'''
 
 tokenizer 	 = load_tokenizer()
 model     	 = load_model('application/static/Models/model_under_use.h5')
@@ -157,8 +164,8 @@ def test():
 
         predictions = model.predict(text_seq_padded)
         
-        class_num = [ tfmath.argmax(prediction) for prediction in predictions]
-        class_num = [ tfbackend.eval(i) for i in class_num ]
+        class_num = tfmath.argmax(prediction, axis= 1) #[ tfmath.argmax(prediction) for prediction in predictions]
+        class_num = tfbackend.eval(class_num)          #[ tfbackend.eval(i) for i in class_num ]
         class_num = decode_onehot_labels(class_num)
         
         data = list(zip(sentences, predictions, class_num))
@@ -166,5 +173,38 @@ def test():
         correctClassForm = SelectCorrectClassForm()
 
         return render_template("test.html", predictionForm=predictionForm, data=data, correctClassForm=correctClassForm, class_colors=class_colors)
+    
+    return render_template("test.html", predictionForm=predictionForm)
+
+
+def hammad():
+
+    global model, tokenizer, maxlen
+
+    predictionForm = PredictionDataForm()
+    if predictionForm.validate_on_submit():
+        
+        sentences           = tokenizer.tokenize(predictionForm.text_area.data)  #predictionForm.text_area.data.split('. ')
+        correctClassForms   = [ SelectCorrectClassForm() for _ in sentences ]
+
+        text_seq        = tokenizer.texts_to_sequences(sentences)
+        text_seq_padded = pad_sequences(text_seq, maxlen=maxlen, padding='post', truncating='post')
+
+        predictions = model.predict(text_seq_padded)
+        
+        class_num = tfmath.argmax(prediction, axis= 1) #[ tfmath.argmax(prediction) for prediction in predictions]
+        class_num = tfbackend.eval(class_num)          #[ tfbackend.eval(i) for i in class_num ]
+        labels    = decode_onehot_labels(class_num)
+
+        for form, clss in zip(correctClassForms, class_arr[class_num]): form.dropdown.data = clss
+        
+        data = list(zip(sentences, predictions, labels, correctClassForms))
+
+        return render_template(
+            "test.html", 
+            predictionForm= predictionForm, 
+            data=           data, 
+            class_colors=   class_colors
+        )
     
     return render_template("test.html", predictionForm=predictionForm)
