@@ -1,0 +1,5 @@
+tensorflow==2.3
+pandas
+flask
+flask-wtf
+nltk
