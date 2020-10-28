@@ -53,17 +53,16 @@ def train():
     if inputform.validate_on_submit():
         singlefile()
         file = inputform.file.data
-        if file.filename[-3:] != 'csv':
-            #print("ONLY UPLOAD A 'csv' FILE!")
-            flash("ONLY UPLOAD A 'csv' FILE!", "danger")
+        if file.filename.split(".")[-1] != 'tsv':
+            flash("ONLY UPLOAD A 'tsv' FILE!", "danger")
             return redirect(url_for('train'))
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'],str(file.filename)))
-        #print("File Successfully Uploaded")
+
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], str(file.filename)))
         flash("File Successfully Uploaded", "success")
         file.close()
 
     
-    trainModelform = TrainModelForm()        
+    trainModelform   = TrainModelForm()        
     restratModelform = ModelFromScratchForm()
 
     return render_template("train.html", inputform=inputform, trainModelform=trainModelform, restratModelform=restratModelform)
@@ -76,10 +75,12 @@ def train_model():
     path      = "application/static/File_Upload_Folder/" + file_name
 
     #Loading the data from csv file
-    df       = load_data(path)
-    labels   = df['labels'].to_numpy()
-    features = df['sentences'].to_numpy()
-    total_samples = len(df)
+    #df       = load_data(path)
+    data     = np.genfromtxt(path, delimiter='\t', dtype= str)
+    labels   = data[0] #df['labels'].to_numpy()
+    features = data[1] #df['sentences'].to_numpy()
+
+    total_samples = data.shape[0]
 
     #Cleaning stop words and converting to lists
     features = filter_func(features)
@@ -128,6 +129,7 @@ def train_model():
 
     flash("Model Trained and Saved!", "success")
     return redirect('train')
+
 
 @app.route("/restrat_model", methods=[POST])
 def restart_model():
