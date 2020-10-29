@@ -84,15 +84,15 @@ def train_model():
     #Loading the data from csv file
     #df       = load_data(path)
     data     = np.genfromtxt(path, delimiter='\t', dtype= str)
-    labels   = data[0] #df['labels'].to_numpy()
-    features = data[1] #df['sentences'].to_numpy()
+    labels   = data[:, 0] #df['labels'].to_numpy()
+    features = data[:, 1] #df['sentences'].to_numpy()
 
     total_samples = data.shape[0]
 
     #Cleaning stop words and converting to lists
     features = filter_func(features)
 
-    #shuffling the data
+    #shuffling the data    
     rand_features, rand_labels = shuffle(features, labels)
 
     #Imp numbers to create Embeddings and for padding
@@ -104,12 +104,12 @@ def train_model():
     ratio = 0.9
     mark  = int(total_samples*ratio)
 
-    train = (rand_features[:mark], rand_labels[:mark])
-    test  = (rand_features[mark:], rand_labels[mark:])
+    train_x, train_y = (rand_features[:mark], rand_labels[:mark])
+    test_x, test_y   = (rand_features[mark:], rand_labels[mark:])
 
     #One hot encoding Labels
-    train_labels = onehot_encode_labels(train[1])
-    test_labels  = onehot_encode_labels(test[1])
+    train_labels = onehot_encode_labels(train_y)
+    test_labels  = onehot_encode_labels(test_y)
 
     #Tokenizing the data
     #tokenizer = Tokenizer(3126)
@@ -121,8 +121,8 @@ def train_model():
     #    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-    train_sequences = tokenizer.texts_to_sequences(train[0])
-    test_sequences  = tokenizer.texts_to_sequences(test[0])
+    train_sequences = tokenizer.texts_to_sequences(train_x)
+    test_sequences  = tokenizer.texts_to_sequences(test_x)
 
     train_padded = pad_sequences(train_sequences, maxlen=maxlen, padding='post', truncating='post')
     test_padded  = pad_sequences(test_sequences,  maxlen=maxlen, padding='post', truncating='post')
@@ -150,8 +150,8 @@ def restart_model():
 	return redirect(url_for('train'))
 
 
-@app.route("/test",  methods=[GET,POST])
-def test():
+
+'''def test():
     global model, tokenizer, maxlen
 
     predictionForm = PredictionDataForm()
@@ -164,7 +164,7 @@ def test():
 
         predictions = model.predict(text_seq_padded)
         
-        class_num = tfmath.argmax(prediction, axis= 1) #[ tfmath.argmax(prediction) for prediction in predictions]
+        class_num = tfmath.argmax(predictions, axis= 1) #[ tfmath.argmax(prediction) for prediction in predictions]
         class_num = tfbackend.eval(class_num)          #[ tfbackend.eval(i) for i in class_num ]
         class_num = decode_onehot_labels(class_num)
         
@@ -174,17 +174,17 @@ def test():
 
         return render_template("test.html", predictionForm=predictionForm, data=data, correctClassForm=correctClassForm, class_colors=class_colors)
     
-    return render_template("test.html", predictionForm=predictionForm)
+    return render_template("test.html", predictionForm=predictionForm)'''
 
-
-def hammad():
+@app.route("/test",  methods=[GET,POST])
+def test():
 
     global model, tokenizer, maxlen
 
     predictionForm = PredictionDataForm()
     if predictionForm.validate_on_submit():
         
-        sentences           = tokenizer.tokenize(predictionForm.text_area.data)  #predictionForm.text_area.data.split('. ')
+        sentences           = predictionForm.text_area.data.split('. ')
         correctClassForms   = [ SelectCorrectClassForm() for _ in sentences ]
 
         text_seq        = tokenizer.texts_to_sequences(sentences)
@@ -192,19 +192,22 @@ def hammad():
 
         predictions = model.predict(text_seq_padded)
         
-        class_num = tfmath.argmax(prediction, axis= 1) #[ tfmath.argmax(prediction) for prediction in predictions]
+        class_num = tfmath.argmax(predictions, axis= 1) #[ tfmath.argmax(prediction) for prediction in predictions]
         class_num = tfbackend.eval(class_num)          #[ tfbackend.eval(i) for i in class_num ]
         labels    = decode_onehot_labels(class_num)
 
-        for form, clss in zip(correctClassForms, class_arr[class_num]): form.dropdown.data = clss
+        for form, clss in zip(correctClassForms, class_arr[class_num]): 
+            form.dropdown.default = clss
+            form.dropdown.process(clss)
         
         data = list(zip(sentences, predictions, labels, correctClassForms))
 
         return render_template(
             "test.html", 
-            predictionForm= predictionForm, 
-            data=           data, 
-            class_colors=   class_colors
+            predictionForm = predictionForm, 
+            data           = data, 
+            class_colors   = class_colors,
+            #correctClassForms = correctClassForms
         )
     
     return render_template("test.html", predictionForm=predictionForm)

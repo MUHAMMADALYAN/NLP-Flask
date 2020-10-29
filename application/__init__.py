@@ -1,4 +1,8 @@
 from flask import Flask
+#from flask_cors import CORS
+
+
+#cors = CORS()
 
 def create_app():
     """ Creating the Flask app and setting its config """
@@ -8,6 +12,9 @@ def create_app():
 
     #setting config variables from DevelopmentConfig class in config file
     app.config.from_object('config.Config')
+
+    #Initiaizaing Plugins
+    #cors.__init__(app)
 
     with app.app_context():
 
