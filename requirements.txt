@@ -3,3 +3,7 @@ pandas
 flask
 flask-wtf
 nltk
+
+python 
+nltk.download('stopwords')
+nltk.download('punkt')

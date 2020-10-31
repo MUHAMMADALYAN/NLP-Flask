@@ -8,20 +8,12 @@
     background-color: {{ class_colors['purpose'] }}; 
     color: black;
 }
-#craftsmaship{
-    background-color:  {{ class_colors['craftsmaship'] }};
+#craftsmanship{
+    background-color:  {{ class_colors['craftsmanship'] }};
     color: black;
 }
 #aesthetic{
     background-color: {{ class_colors['aesthetic'] }};
-    color: black;
-}
-#narative{
-    background-color: red;
-    color: black;
-}
-#influence{
-    background-color: red;
     color: black;
 }
 #none{
@@ -37,10 +29,10 @@
 		<form method="POST" enctype="multipart/form-data" action="{{ url_for('test') }}">
 			<fieldset class="form-group">
 	           
-	    	{{ predictionForm.hidden_tag() }}
-	          
-	        
-	        <legend>Enter Text to Classify</legend>
+	    	{{ predictionForm.csrf_token }}
+
+	         <legend>Enter Text to Classify</legend>
+	        	        
 			<div class="form-group">
 			      
 				{% if predictionForm.text_area.errors %}
@@ -59,42 +51,9 @@
 			</fieldset>
 		</form>
 	</div>
-
-	<!-- Column for the Output -->
-	
-	<div class="col-md-6 pl-4 py-3">
-		<p>
-	    	{% for i in data %}
-	            <mark id="{{ i[2] }}"> {{ i[0] }}</mark>
-	        {% endfor %}
-    	</p>
-    </div>
-	
 </div>
-			
+	
 
-<div>
-	<table>
-		{% for j in data %}
-			<tr>
-				<td>{{ j[0] }}</td>
-				<td>{{ j[1] }}</td>
-				<!--td>{{ j[2] }}</td>
-				<!--td>
-					 correctClassForm.hidden_tag() }}
-					 correctClassForm.dropdown }}
-				</td-->
-				<td>
-					{{ j[3].hidden_tag() }}
-					{{ j[3].dropdown }}
-				</td>
-				<td>
-					<span id="{{ j[2] }}">Class: {{ j[2] }}</span>
-				</td>
 
-			</tr>
-		{% endfor %}
-	</table>
-</div>
 
 {% endblock %}

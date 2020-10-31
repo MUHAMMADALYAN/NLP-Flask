@@ -4,7 +4,7 @@
 		
 
 		<div class="ml-4 my-3">
-			<h1>This is the Training Page</h1>
+			<h1>Training</h1>
 	  		<form method="POST" enctype="multipart/form-data" action="{{ url_for('train') }}">
 		  		<fieldset class="form-group">
 	           
@@ -22,7 +22,7 @@
 	  	</div>
 
 	  	<div class="ml-4 my-3">
-	  		<form method="POST" action="{{ url_for('train_model') }}">
+	  		<form method="POST" action="{{ url_for('train_model', retrain=False) }}">
 		  		<fieldset class="form-group">
 	           
 	      		{{ trainModelform.hidden_tag() }}          

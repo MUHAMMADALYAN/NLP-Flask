@@ -3,15 +3,20 @@ import numpy as np
 from collections import Counter
 import csv, pickle, os
 from nltk.corpus import stopwords
+from flask import current_app as app 
 
 class_arr = np.array([
     "purpose", 
-    "craftsmaship", 
-    "aesthetic", 
-    "narative", 
-    "influence", 
+    "craftsmanship", 
+    "aesthetic",
     "none"
 ])
+index = {
+    "purpose"      : [1, 0, 0, 0], 
+    "craftsmanship": [0, 1, 0, 0],  
+    "aesthetic"    : [0, 0, 1, 0],
+    "none"         : [0, 0, 0, 1]        
+}
 
 
 def load_data(path):
@@ -69,14 +74,7 @@ def shuffle(features, labels):
 
 
 def onehot_encode_labels(labels):
-    index = {
-        "purpose"      : [1, 0, 0, 0, 0, 0], 
-        "craftsmanship": [0, 1, 0, 0, 0, 0],  
-        "aesthetic"    : [0, 0, 1, 0, 0, 0],
-        "narative"     : [0, 0, 0, 1, 0, 0],
-        "influence"    : [0, 0, 0, 0, 1, 0],
-        "none"         : [0, 0, 0, 0, 0, 1]        
-    }
+    
     return np.array([
         index[e] 
         for e in labels
@@ -112,13 +110,33 @@ def save_classColors(new_purpose, new_craftsmaship, new_aesthetic, new_none):
         pickle.dump(class_colors, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def singlefile():
+def singlefile(file):
+
     list = os.listdir("application/static/File_Upload_Folder/")
-    #print(list)
     for i in list:
         os.remove("application/static/File_Upload_Folder/"+i)
+
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], "uploaded.tsv"))
+
 
 
 def decode_onehot_labels(class_idx):
     
     return class_arr[class_idx] 
+
+
+def saveAsTSV(labels, sentences):
+    
+    with open('application/test/output2.tsv', 'wt') as out_file:
+        tsv_writer = csv.writer(out_file, delimiter='\t')
+
+        for i in range(len(labels)):
+            tsv_writer.writerow([labels[i], sentences[i]])
+
+def roundoff(arr):
+
+    arr = np.max(arr, axis= 1)
+    arr = arr * 100
+    arr = np.around(arr, decimals= 3)
+
+    return arr
