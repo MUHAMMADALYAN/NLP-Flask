@@ -41,8 +41,7 @@ def special_form(labels):
 	class F(FlaskForm): 
 		n_attrs = len(labels)
 		
-
-	print("*"*100)
+		
 	for i, label in enumerate(labels):
 		setattr(
 			F, 
@@ -53,7 +52,6 @@ def special_form(labels):
 				default   = label,
 				validators= [DataRequired()],
 			))
-	print("*"*100)
 	F.proceed   = SubmitField("Proceed to Download or Train")
 	
 	return F()

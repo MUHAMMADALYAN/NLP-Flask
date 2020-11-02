@@ -80,11 +80,10 @@ def train():
 
 @app.route('/train_model/<retrain>', methods=[GET, POST])
 def train_model(retrain):
-    global model, tokenizer, maxlen 
+    global model, tokenizer, maxlen
 
 
-
-    file_path = "application/test/output2.tsv" \
+    file_path = "application/bin/output2.tsv" \
                 if (retrain == 'True') else \
                 "application/static/File_Upload_Folder/uploaded.tsv"
 
@@ -94,7 +93,7 @@ def train_model(retrain):
         features = data[:, 1]
 
 
-
+        print("\n\nLength of Features:", len(features), '\n\n')
         if len(features) < 70:
             flash("There must be atleast 70 rows of Data before training", "danger")
             return redirect(url_for("train"))
@@ -142,6 +141,11 @@ def train_model(retrain):
         #overwriting the model
         model.save('application/static/Models/model_under_use.h5')
 
+        #Clearing Bin
+        if file_path == "application/bin/output2.tsv":
+            flash("Bin Emptied", "success")
+            clearBin()
+
         flash("Model Trained and Saved!", "success")
         return redirect(url_for('home'))
 
@@ -153,6 +157,11 @@ def train_model(retrain):
     except KeyError as ke:
         flash("ERROR, Encountered an Unknown Label during Training, Please Check Training Data",  "danger")
         print(ke)
+        return redirect(url_for("train"))
+
+    except OSError as oe:
+        flash("ERROR! No File uploded to Train on", "danger")
+        print(oe)
         return redirect(url_for("train"))
 
 
@@ -208,6 +217,8 @@ def results():
     ]
     
     data = list(zip(sentences, roundoff(predictions), labels, selects))
+    bin_data = loadTSVfromBin()
+    print("\n\nBIN LEN:", len(bin_data), '\n\n')
 
     #print(*zip(labels, [sel.data for sel in selects]), sep= '\n')
 
@@ -217,19 +228,21 @@ def results():
             for sel in selects
         ]
 
-        if len(corrected_labels) < 70:
-            flash("There must be atleast 70 rows of Data before training", "danger")
-            return redirect(url_for("results"))
+        #if len(corrected_labels) < 70:
+        #    flash("There must be atleast 70 rows of Data before training", "danger")
+        #    return redirect(url_for("results"))
 
-        saveAsTSV(corrected_labels, sentences)
+        appendTSVtoBin(corrected_labels, sentences)
 
-        flash("Corrected Labels Data Saved on Server", "success")
+        flash(f"Added { len(corrected_labels) } rows to the bin, Now total rows in bin are { len(bin_data)+len(corrected_labels) }", "success")
         return redirect(url_for("proceed"))
         
 
     return render_template(
         "results.html",
         data            = data,
+        bin_data        = bin_data,
+        len_bin_data    = len(bin_data),
         class_colors    = class_colors,
         specialForm     = specialForm
     )
@@ -237,8 +250,9 @@ def results():
 
 @app.route("/download_file",methods=[GET])
 def download_file():
-    path = "test/output2.tsv"
+    path = "bin/output2.tsv"
     return send_file(path, as_attachment=True)
+
 
 @app.route("/proceed", methods=[GET])
 def proceed():

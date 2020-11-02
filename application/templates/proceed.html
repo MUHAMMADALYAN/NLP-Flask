@@ -6,15 +6,15 @@
 	<ul class="mx-4">
 		<li>
 			<a href="{{ url_for('download_file') }}">
-				Download TSV
+				Download TSV from bin
 			</a>
 		</li>
 		<li>
 			<a href="{{ url_for('train_model', retrain= True) }}">
-				Train Model on Corrected Labels
+				Train Model on data from bin
 			</a>
 		</li>
 	</ul>
-	<span class="mx-4">NOTE: If you want to do both, you should Download First</span>
+	<span class="mx-4">NOTE: The bin will be  emptied after you Train model on bin, if you want keep a local copy of the bin you should download first</span>
 
 {% endblock %}

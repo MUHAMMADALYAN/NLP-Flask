@@ -125,13 +125,41 @@ def decode_onehot_labels(class_idx):
     return class_arr[class_idx] 
 
 
-def saveAsTSV(labels, sentences):
+def appendTSVtoBin(labels, sentences):
     
-    with open('application/test/output2.tsv', 'wt') as out_file:
-        tsv_writer = csv.writer(out_file, delimiter='\t')
+    with open('application/bin/output2.tsv', 'a') as tsv_file:
+        tsv_writer = csv.writer(tsv_file, delimiter='\t')
 
-        for i in range(len(labels)):
-            tsv_writer.writerow([labels[i], sentences[i]])
+        for i in zip(labels, sentences):
+            tsv_writer.writerow([i[0], i[1]])
+
+def loadTSVfromBin():
+
+    with open('application/bin/output2.tsv', 'r') as tsv_file:
+
+        tsv_reader = csv.reader(tsv_file, delimiter='\t')
+
+        try:
+            for row in tsv_reader:
+                print("\n\nROW:", row)
+                try:
+                    data = [ (row[1], row[0]) for row in tsv_reader ]
+                except IndexError as ie2:
+                    print("Second:", ie2)
+                    tsv_reader.next()
+
+        except IndexError as ie:
+            print("\n\nFIRST:", ie)
+            data = []
+        
+    return data
+
+def clearBin():
+
+    with open('application/bin/output2.tsv', 'wt') as tsv_file:
+        tsv_writer = csv.writer(tsv_file, delimiter='\t')
+
+    return
 
 def roundoff(arr):
 
