@@ -18,11 +18,23 @@
 		$("#trainingButton").click(function(){
 			$("#trainingButton").prop("disabled", true);
 			$("#guideMsg").text("Model Traning Started, Please wait, a download and notification will be promtpted after the training has finished. DO NOT LEAVE THIS PAGE")
-			$.post("{{ url_for('train_model', retrain= True) }}", function(){
-				console.log("Downlading");
-				console.log($("#download").attr("href"));
-				window.open($("#download").attr("href"));		
-				window.open("{{ url_for('home') }}");
+			$.post("{{ url_for('train_model', retrain= True) }}", function(response){
+				if (response == "training done"){
+					console.log(response)
+					console.log("Downlading");
+					console.log($("#download").attr("href"));
+					window.open($("#download").attr("href"));		
+					window.open("{{ url_for('home') }}");
+				}
+				else if (response == "less than 70"){
+					console.log(response)
+					window.location.replace("{{ url_for('train') }}");
+				}
+
+				else{
+					console.log(response)
+					window.location.replace("{{ url_for('train') }}");
+				}				
 				
 			});			
 		});

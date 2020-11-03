@@ -92,10 +92,10 @@ def train_model(retrain):
         features = data[:, 1]
 
 
-        print("\n\nLength of Features:", len(features), '\n\n')
+
         if len(features) < 70:
             flash("There must be atleast 70 rows of Data before training", "danger")
-            return redirect(url_for("train"))
+            return "less than 70"
 
 
         total_samples = data.shape[0]
@@ -130,22 +130,26 @@ def train_model(retrain):
         model.save('application/static/Models/model_under_use.h5')
 
         flash("Model Trained and Saved!", "success")
-        return redirect(url_for('download_file'))
+        return "training done"
 
     except ValueError as ve:
         flash("ERROR, Plz check if all your sentences end with a period i.e ' . '",  "danger")
         print(ve)
-        return redirect(url_for("train"))
+        return "ValueError"
 
     except KeyError as ke:
         flash("ERROR, Encountered an Unknown Label during Training, Please Check Training Data",  "danger")
         print(ke)
-        return redirect(url_for("train"))
+        return "keyError"
 
     except OSError as oe:
         flash("ERROR! No File uploded to Train on", "danger")
         print(oe)
-        return redirect(url_for("train"))
+        return "osError"
+
+    except IndexError as ie:
+        flash("There must be atleast 70 rows of Data before training", "danger")
+        return "indexError"
 
 @app.route("/restrat_model", methods=[POST])
 def restart_model():
