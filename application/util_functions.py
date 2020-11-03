@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from collections import Counter
 import csv, pickle, os
@@ -18,6 +17,7 @@ index = {
     "none"         : [0, 0, 0, 1]        
 }
 
+#############       DATA PRE-PROCESSING FUNCTIONS       #############   
 
 def load_data(path):
     with open(path, 'r') as f:
@@ -80,18 +80,20 @@ def onehot_encode_labels(labels):
         for e in labels
     ])
 
+
+def decode_onehot_labels(class_idx):
+    
+    return class_arr[class_idx] 
+
+
+#############       LOAD FUNCTIONS      #############
+
 def load_tokenizer():
 
     with open('application/static/Pickles/tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     return tokenizer
-
-
-def save_tokenizer(tokenizer):
-
-    with open('application/static/Pickles/tokenizer.pickle', 'wb') as handle:
-        pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def load_classColors():
@@ -102,6 +104,14 @@ def load_classColors():
     return class_colors
 
 
+#############       SAVE FUNCTIONS      #############
+
+def save_tokenizer(tokenizer):
+
+    with open('application/static/Pickles/tokenizer.pickle', 'wb') as handle:
+        pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 def save_classColors(new_purpose, new_craftsmaship, new_aesthetic, new_none):
     class_colors = {'purpose': new_purpose, 'craftsmaship': new_craftsmaship, 'aesthetic': new_aesthetic, 'none':new_none}
 
@@ -110,47 +120,31 @@ def save_classColors(new_purpose, new_craftsmaship, new_aesthetic, new_none):
         pickle.dump(class_colors, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def singlefile(file):
-
-    list = os.listdir("application/static/File_Upload_Folder/")
-    for i in list:
-        os.remove("application/static/File_Upload_Folder/"+i)
-
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], "uploaded.tsv"))
-
-
-
-def decode_onehot_labels(class_idx):
-    
-    return class_arr[class_idx] 
+#############       BIN FUNCTIONS      #############
 
 
 def appendTSVtoBin(labels, sentences):
-    
-    with open('application/bin/output2.tsv', 'a') as tsv_file:
+
+    with open('application/bin/output2.tsv', 'a', newline="") as tsv_file:
         tsv_writer = csv.writer(tsv_file, delimiter='\t')
 
         for i in zip(labels, sentences):
             tsv_writer.writerow([i[0], i[1]])
+            print(i[0], i[1])
 
 def loadTSVfromBin():
 
     with open('application/bin/output2.tsv', 'r') as tsv_file:
 
         tsv_reader = csv.reader(tsv_file, delimiter='\t')
-
+        
         try:
-            for row in tsv_reader:
-                print("\n\nROW:", row)
-                try:
-                    data = [ (row[1], row[0]) for row in tsv_reader ]
-                except IndexError as ie2:
-                    print("Second:", ie2)
-                    tsv_reader.next()
+            data = [ (row[1], row[0]) for row in tsv_reader ]
 
         except IndexError as ie:
-            print("\n\nFIRST:", ie)
+            print(ie)
             data = []
+            
         
     return data
 
@@ -160,6 +154,17 @@ def clearBin():
         tsv_writer = csv.writer(tsv_file, delimiter='\t')
 
     return
+
+
+#############       OTHER FUNCTIONS      #############
+
+def singlefile(file):
+
+    list = os.listdir("application/static/File_Upload_Folder/")
+    for i in list:
+        os.remove("application/static/File_Upload_Folder/"+i)
+
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], "uploaded.tsv"))
 
 def roundoff(arr):
 

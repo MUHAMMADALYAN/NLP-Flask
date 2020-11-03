@@ -9,9 +9,8 @@ from .forms import (
     FileInputForm, 
     PredictionDataForm, 
     TrainModelForm, 
-    ModelFromScratchForm,  
     ChangeClassColorsForm, 
-    SubmitAllForm,
+    #SubmitAllForm,
     special_form
 )
 
@@ -65,6 +64,7 @@ def train():
 
         file = inputform.file.data
         if file.filename.split(".")[-1] != 'tsv':
+
             flash("ONLY UPLOAD A 'tsv' FILE!", "danger")
             return redirect(url_for('train'))
 
@@ -74,18 +74,17 @@ def train():
 
     
     trainModelform   = TrainModelForm()        
-    restratModelform = ModelFromScratchForm()
 
-    return render_template("train.html", inputform=inputform, trainModelform=trainModelform, restratModelform=restratModelform)
+    return render_template("train.html", inputform=inputform, trainModelform=trainModelform)
 
 @app.route('/train_model/<retrain>', methods=[GET, POST])
 def train_model(retrain):
     global model, tokenizer, maxlen
 
-
-    file_path = "application/bin/output2.tsv" \
-                if (retrain == 'True') else \
-                "application/static/File_Upload_Folder/uploaded.tsv"
+    if retrain == 'True':
+        file_path       = "application/bin/output2.tsv"
+    else:
+        file_path = "application/static/File_Upload_Folder/uploaded.tsv"
 
     try:
         data     = np.genfromtxt(file_path, delimiter='\t', dtype= str)
@@ -112,16 +111,8 @@ def train_model(retrain):
         num_words     = len(count)
         maxlen        = maxlen - 20
 
-        #Train Test Split
-        ratio = 0.9
-        mark  = int(total_samples*ratio)
-
-        train_x, train_y = (features[:mark], labels[:mark])
-        test_x, test_y   = (features[mark:], labels[mark:])
-
         #One hot encoding Labels
-        train_y = onehot_encode_labels(train_y)
-        test_y  = onehot_encode_labels(test_y)
+        labels = onehot_encode_labels(labels)
 
         #Tokenizing the data
         tokenizer.fit_on_texts(features)
@@ -129,25 +120,17 @@ def train_model(retrain):
         # saving the tokenizer
         save_tokenizer(tokenizer)
 
-        train_sequences = tokenizer.texts_to_sequences(train_x)
-        test_sequences  = tokenizer.texts_to_sequences(test_x)
-
-        train_padded = pad_sequences(train_sequences, maxlen=maxlen, padding='post', truncating='post')
-        test_padded  = pad_sequences(test_sequences,  maxlen=maxlen, padding='post', truncating='post')
+        feature_sequences = tokenizer.texts_to_sequences(features)
+        feature_padded = pad_sequences(feature_sequences, maxlen=maxlen, padding='post', truncating='post')
 
         #Training the Model
-        model.fit(train_padded, train_y, epochs=20, validation_data=(test_padded, test_y))
+        model.fit(feature_padded, labels, epochs=20)
 
         #overwriting the model
         model.save('application/static/Models/model_under_use.h5')
 
-        #Clearing Bin
-        if file_path == "application/bin/output2.tsv":
-            flash("Bin Emptied", "success")
-            clearBin()
-
         flash("Model Trained and Saved!", "success")
-        return redirect(url_for('home'))
+        return redirect(url_for('download_file'))
 
     except ValueError as ve:
         flash("ERROR, Plz check if all your sentences end with a period i.e ' . '",  "danger")
@@ -164,7 +147,6 @@ def train_model(retrain):
         print(oe)
         return redirect(url_for("train"))
 
-
 @app.route("/restrat_model", methods=[POST])
 def restart_model():
 	global model
@@ -175,9 +157,6 @@ def restart_model():
 	flash("Model Started Form Scratch Successful", "success")
 
 	return redirect(url_for('train'))
-
-
-
 
 
 @app.route("/test",  methods=[GET, POST])
@@ -220,17 +199,11 @@ def results():
     bin_data = loadTSVfromBin()
     print("\n\nBIN LEN:", len(bin_data), '\n\n')
 
-    #print(*zip(labels, [sel.data for sel in selects]), sep= '\n')
-
     if specialForm.validate_on_submit():
         corrected_labels = [
             sel.data
             for sel in selects
         ]
-
-        #if len(corrected_labels) < 70:
-        #    flash("There must be atleast 70 rows of Data before training", "danger")
-        #    return redirect(url_for("results"))
 
         appendTSVtoBin(corrected_labels, sentences)
 
@@ -241,6 +214,7 @@ def results():
     return render_template(
         "results.html",
         data            = data,
+        len_data        = len(data),
         bin_data        = bin_data,
         len_bin_data    = len(bin_data),
         class_colors    = class_colors,
@@ -248,10 +222,17 @@ def results():
     )
 
 
-@app.route("/download_file",methods=[GET])
+@app.route("/download_file", methods=[GET])
 def download_file():
     path = "bin/output2.tsv"
     return send_file(path, as_attachment=True)
+
+@app.route("/clear_bin", methods=[GET])
+def clear_bin():
+
+    clearBin()
+    flash("Bin Emptied", "success")
+    return redirect(url_for("home"))
 
 
 @app.route("/proceed", methods=[GET])

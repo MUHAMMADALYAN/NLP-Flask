@@ -39,19 +39,19 @@
 		<!-- Displaying Data From Bin -->
 		{% if len_bin_data > 0 %}
 			<hr>
-			<p class="text-center">Data From bin (uneditable)</p>
+			<legend class="text-center">Data From bin (uneditable)</legend>
 			{% for d in bin_data %}
 				<li>
 					<div>
 						<p>
 							{{ d[0] }}
 							<br>
-							Class: <span id="{{ d[2] }}">{{ d[2] }}</span>
+							Class: <span id="{{ d[1] }}">{{ d[1] }}</span>
 						</p>
 					</div>
 				</li>
 			{% endfor %}
-			<p>Data from bin ends here</p>
+			<legend class="text-center">Data From bin ends here</legend>
 			<hr>
 		{% endif %}
 
@@ -74,6 +74,8 @@
 	</ol>
 
 	{{ specialForm.proceed(class='btn btn-outline-dark m-4')  }}
+	<br>
+	<span>NOTE: Proceeding will add {{ len_data }} news rows to the bin</span>
 			
 </form>
 {% endif %}

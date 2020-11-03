@@ -7,6 +7,7 @@ from wtforms.validators import DataRequired, Length
 
 from .util_functions import class_arr
 
+
 class FileInputForm(FlaskForm):
 	file   = FileField("Upload CSV file", validators=[FileRequired('File was Empty!')])
 	submit = SubmitField("Upload")
@@ -17,10 +18,7 @@ class PredictionDataForm(FlaskForm):
 	submit 	  =  SubmitField("Classify")
 
 class TrainModelForm(FlaskForm):
-	train = SubmitField("Train Model")
-
-class ModelFromScratchForm(FlaskForm):
-	restart = SubmitField("Start Model from Scratch")
+	train = SubmitField("Train Model form Uploaded File")
 
 
 class ChangeClassColorsForm(FlaskForm):
@@ -33,7 +31,6 @@ class ChangeClassColorsForm(FlaskForm):
 
 class SubmitAllForm(FlaskForm):
 	submit = SubmitField("Save")
-
 
 
 def special_form(labels):
@@ -52,6 +49,6 @@ def special_form(labels):
 				default   = label,
 				validators= [DataRequired()],
 			))
-	F.proceed   = SubmitField("Proceed to Download or Train")
+	F.proceed   = SubmitField("Proceed")
 	
 	return F()

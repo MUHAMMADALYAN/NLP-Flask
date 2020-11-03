@@ -5,16 +5,29 @@
 	<h1 class="mx-4">Choose an Option</h1>
 	<ul class="mx-4">
 		<li>
-			<a href="{{ url_for('download_file') }}">
-				Download TSV from bin
-			</a>
-		</li>
-		<li>
-			<a href="{{ url_for('train_model', retrain= True) }}">
-				Train Model on data from bin
-			</a>
+			<button id="trainingButton" class="btn btn-link">Train Model on data from bin</button>
+			<p id="guideMsg" style="color: red"></p>
 		</li>
 	</ul>
-	<span class="mx-4">NOTE: The bin will be  emptied after you Train model on bin, if you want keep a local copy of the bin you should download first</span>
+	<span class="mx-4">NOTE: The bin will downloaded after training has completed, It is advised to clear the bin everytime after training to prevent training over the same data multiple times</span>
+
+	<a id="download" href="{{ url_for('download_file') }}"></a>
+
+	<script type="text/javascript">
+		
+		$("#trainingButton").click(function(){
+			$("#trainingButton").prop("disabled", true);
+			$("#guideMsg").text("Model Traning Started, Please wait, a download and notification will be promtpted after the training has finished. DO NOT LEAVE THIS PAGE")
+			$.post("{{ url_for('train_model', retrain= True) }}", function(){
+				console.log("Downlading");
+				console.log($("#download").attr("href"));
+				window.open($("#download").attr("href"));		
+				window.open("{{ url_for('home') }}");
+				
+			});			
+		});
+
+
+	</script>
 
 {% endblock %}
