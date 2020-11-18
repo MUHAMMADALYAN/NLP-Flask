@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, url_for, flash,  send_from_directory, send_file
 from flask import current_app as app
 from werkzeug.utils import secure_filename, redirect
-
+import json
 import inspect, nltk
 import numpy as np
 
@@ -242,3 +242,25 @@ def clear_bin():
 @app.route("/proceed", methods=[GET])
 def proceed():
     return render_template("proceed.html")
+
+
+@app.route("/predict", methods=["GET","POST"])
+def classified():
+    text=request.json
+    text=text['mytext']
+    global model, tokenizer , maxlen
+    sentences   = nltk.sent_tokenize(text) 
+    text_seq        = tokenizer.texts_to_sequences(sentences)
+    text_seq_padded = pad_sequences(text_seq, maxlen=maxlen,padding='post', truncating='post')
+    predictions = model.predict(text_seq_padded)
+    class_num = tfmath.argmax(predictions, axis= 1) #Returns the index with the largest value across axes of a tensor.
+    class_num = tfbackend.eval(class_num) 
+    labels    = decode_onehot_labels(class_num)
+
+    dict={
+
+    }
+    dat = zip(sentences, labels)
+    for i in dat:
+        dict[i[0]]=i[1]
+    return json.dumps(dict)
