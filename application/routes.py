@@ -1,3 +1,4 @@
+from flask import *
 from flask import Flask, render_template, request, url_for, flash,  send_from_directory, send_file
 from flask import current_app as app
 from werkzeug.utils import secure_filename, redirect
@@ -264,3 +265,12 @@ def classified():
     for i in dat:
         dict[i[0]]=i[1]
     return json.dumps(dict)
+
+@app.route("/getsimilarity",methods=['POST'])
+def sentenceSimliarity():
+    dimensions = {'aesthetic':0,'craftsmanship':0,'purpose':0,'none':0}
+    data = request.get_json(force=True)
+    sentence1 = data.get('sentence1')
+    sentence2 = data.get('sentence2')    
+    a = getSimlarity(sentence1,sentence2)
+    return jsonify(a)
