@@ -3,6 +3,8 @@ from collections import Counter
 import csv, pickle, os
 from nltk.corpus import stopwords
 from flask import current_app as app 
+from sentence_transformers import SentenceTransformer, util
+import time
 
 class_arr = np.array([
     "purpose", 
@@ -173,3 +175,22 @@ def roundoff(arr):
     arr = np.around(arr, decimals= 3)
 
     return arr
+
+transformer_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
+def getSimlarity(sentence1,sentence2):
+  print(sentence1,sentence2)
+  #Compute embedding for both lists
+  embeddings1 = transformer_model.encode(sentence1, convert_to_tensor=True)
+  embeddings2 = transformer_model.encode(sentence2, convert_to_tensor=True)
+
+  #Compute cosine-similarits
+  cosine_scores = util.pytorch_cos_sim(embeddings1, embeddings2)
+  #Output the pairs with their score
+  d = {}
+  for i in range(len(sentence1)):
+    # s = []
+    dd = {}
+    for j in range(len(sentence2)):
+      dd[sentence2[j]] = "{:.2f}".format(cosine_scores[i][j])
+    d[sentence1[i]] = dd
+  return d  
