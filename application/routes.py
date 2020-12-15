@@ -274,3 +274,30 @@ def sentenceSimliarity():
     sentence2 = data.get('sentence2')    
     a = getSimlarity(sentence1,sentence2)
     return jsonify(a)
+
+
+@app.route("/addToBin",methods=["GET","POST"])
+def addToBin():
+    text=request.json
+    lab=text['labels']
+    sen=text['sentences']
+
+    x = zip(sen,lab)
+    json_data_tuples = list(x)
+    
+    bin_data=loadTSVfromBin()
+    
+    for i in bin_data:
+            for j in json_data_tuples:
+                #comparing only sentences
+                if i[0]==j[0]:
+                    json_data_tuples.remove(j)
+    
+    filter_json_labels=[]
+    filter_json_sentences=[]
+    for i in json_data_tuples:
+            filter_json_sentences.append(i[0])
+            filter_json_labels.append(i[1])
+   
+    appendTSVtoBin(filter_json_labels, filter_json_sentences)
+    return ("succeeded")
