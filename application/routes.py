@@ -287,17 +287,19 @@ def addToBin():
     
     bin_data=loadTSVfromBin()
     
-    for i in bin_data:
-            for j in json_data_tuples:
+    for i in json_data_tuples:
+            for j in bin_data:
                 #comparing only sentences
                 if i[0]==j[0]:
-                    json_data_tuples.remove(j)
+                    bin_data.remove(j)
+
     
-    filter_json_labels=[]
-    filter_json_sentences=[]
-    for i in json_data_tuples:
-            filter_json_sentences.append(i[0])
-            filter_json_labels.append(i[1])
+    bin_data_labels=[]
+    bin_data_sentences=[]
+    for i in bin_data:
+            bin_data_sentences.append(i[0])
+            bin_data_labels.append(i[1])
    
-    appendTSVtoBin(filter_json_labels, filter_json_sentences)
-    return ("succeeded")
+    writeTSVtoBin(bin_data_labels,bin_data_sentences)
+    appendTSVtoBin(lab,sen)
+    return ("bin_data")    
