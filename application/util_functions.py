@@ -134,6 +134,15 @@ def appendTSVtoBin(labels, sentences):
             tsv_writer.writerow([i[0], i[1]])
             print(i[0], i[1])
 
+            
+def writeTSVtoBin(labels, sentences):
+    with open('application/bin/output2.tsv', 'w', newline="") as tsv_file:
+        tsv_writer = csv.writer(tsv_file, delimiter='\t')
+        for i in zip(labels, sentences):
+            tsv_writer.writerow([i[0], i[1]])
+            print(i[0], i[1]) 
+            
+            
 def loadTSVfromBin():
 
     with open('application/bin/output2.tsv', 'r') as tsv_file:
