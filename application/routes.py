@@ -304,5 +304,39 @@ def addToBin():
     appendTSVtoBin(lab,sen)
     return ("bin_data")
 
+@app.route("/seeBin", methods=[GET,POST])
+def seeBin():
+
+    bin_data = loadTSVfromBin()
+    bin_labels=[]
+    bin_sentences=[]
+    for i in bin_data:
+        bin_labels.append(i[1])
+        bin_sentences.append(i[0])
+    
+
+    specialForm = special_form(bin_labels)
+    selects     = [
+        getattr(specialForm, f"special_{i}")
+        for i in range(specialForm.n_attrs)
+    ]
+
+    if specialForm.validate_on_submit():
+        corrected_labels = [
+            sel.data
+            for sel in selects
+        ]
+
+        writeTSVtoBin(corrected_labels, bin_sentences) 
+
+    data=list(zip(bin_sentences,bin_labels,selects))    
+    return render_template(
+        "seeBin.html",
+        data=data,
+        bin_data        = bin_data,
+        len_bin_data    = len(bin_data),
+        class_colors    = class_colors,
+        specialForm     = specialForm
+    )
 
 
