@@ -88,7 +88,7 @@ def train_model(retrain):
         file_path = "application/static/File_Upload_Folder/uploaded.tsv"
 
     try:
-        data     = np.genfromtxt(file_path, delimiter='\t', dtype= str)
+        data     = np.genfromtxt(file_path, delimiter='\t', dtype= str, encoding="utf8")
         labels   = data[:, 0]
         features = data[:, 1]
 
@@ -110,7 +110,7 @@ def train_model(retrain):
         #Imp numbers to create Embeddings and for padding
         maxlen, count = count_words(features)
         num_words     = len(count)
-        maxlen        = maxlen - 20
+        maxlen        = maxlen 
 
         #One hot encoding Labels
         labels = onehot_encode_labels(labels)
@@ -302,4 +302,7 @@ def addToBin():
    
     writeTSVtoBin(bin_data_labels,bin_data_sentences)
     appendTSVtoBin(lab,sen)
-    return ("bin_data")    
+    return ("bin_data")
+
+
+
