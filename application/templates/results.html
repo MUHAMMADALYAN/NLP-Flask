@@ -36,25 +36,7 @@
 <form method="POST" action="">
 	{{ specialForm.csrf_token }}
 	<ol>
-		<!-- Displaying Data From Bin -->
-		{% if len_bin_data > 0 %}
-			<hr>
-			<legend class="text-center">Data From bin (uneditable)</legend>
-			{% for d in bin_data %}
-				<li>
-					<div>
-						<p>
-							{{ d[0] }}
-							<br>
-							Class: <span id="{{ d[1] }}">{{ d[1] }}</span>
-						</p>
-					</div>
-				</li>
-			{% endfor %}
-			<legend class="text-center">Data From bin ends here</legend>
-			<hr>
-		{% endif %}
-
+		
 		<!-- Diaplaying Sentences Classified by the Model -->
 		{% for d in data %}
 			<li>
