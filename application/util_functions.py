@@ -143,9 +143,24 @@ def writeTSVtoBin(labels, sentences):
             print(i[0], i[1]) 
             
             
+ def loadTSVfromFolder():
+    with open("application/static/File_Upload_Folder/uploaded.tsv", 'r',encoding="utf8") as tsv_file:
+
+        tsv_reader = csv.reader(tsv_file, delimiter='\t')
+        
+        try:
+            data = [ (row[1], row[0]) for row in tsv_reader ]
+
+        except IndexError as ie:
+            print(ie)
+            data = []
+            
+        
+    return data               
+            
 def loadTSVfromBin():
 
-    with open('application/bin/output2.tsv', 'r') as tsv_file:
+    with open('application/bin/output2.tsv', 'r',encoding="utf8) as tsv_file:
 
         tsv_reader = csv.reader(tsv_file, delimiter='\t')
         
