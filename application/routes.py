@@ -88,11 +88,14 @@ def train_model(retrain):
         file_path = "application/static/File_Upload_Folder/uploaded.tsv"
 
     try:
-        data     = np.genfromtxt(file_path, delimiter='\t', dtype= str, encoding="utf8")
-        labels   = data[:, 0]
-        features = data[:, 1]
-
-
+        #data     = np.genfromtxt(file_path, delimiter='\t', dtype= str, encoding="utf8")
+        data=loadTSVfromFolder()
+        data=np.array(data)
+       
+        features   = data[:, 0]
+       
+        labels = data[:, 1]
+        
 
         if len(features) < 70:
             flash("There must be atleast 70 rows of Data before training", "danger")
