@@ -156,7 +156,7 @@ def loadTSVfromFolder():
             
 def loadTSVfromBin():
 
-    with open('application/bin/output2.tsv', 'r',encoding="utf8) as tsv_file:
+    with open('application/bin/output2.tsv', 'r',encoding="utf8") as tsv_file:
 
         tsv_reader = csv.reader(tsv_file, delimiter='\t')
         
