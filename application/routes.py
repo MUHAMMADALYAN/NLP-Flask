@@ -6,7 +6,7 @@ import json
 import inspect, nltk
 import numpy as np
 
-from .forms import (
+from forms import (
     FileInputForm, 
     PredictionDataForm, 
     TrainModelForm, 
@@ -15,7 +15,7 @@ from .forms import (
     special_form
 )
 
-from .util_functions import *
+from util_functions import *
 
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
